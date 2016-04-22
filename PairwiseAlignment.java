@@ -15,8 +15,8 @@ public class PairwiseAlignment
         Object[] obj = read(seq, scoring);
          
         int[] scoreModel = (int[]) obj[2];
-        StringBuilder seq1 = (StringBuilder) obj[0]; //read1.length() >= read2.length() ? read1 : read2;
-        StringBuilder seq2 = (StringBuilder) obj[1]; //read1.length() < read2.length() ? read1 : read2;
+        StringBuilder seq1 = (StringBuilder) obj[0];
+        StringBuilder seq2 = (StringBuilder) obj[1];
         System.out.println("seq1: "+seq1);
         System.out.println("seq2: "+seq2);
         int match = scoreModel[0];
@@ -28,6 +28,7 @@ public class PairwiseAlignment
         String[][] traceback = new String[m+1][n+1];
         int i = 0;
         int j = 0;
+        // inialize the scoring and traceback table
         for(; i <= m; i++) 
         {
             score[i][j] = (i)*gap;
@@ -39,17 +40,26 @@ public class PairwiseAlignment
             score[i][j] = (j)*gap;
             traceback[i][j] = "L";
         }
+        // start calculate score of two sequence
         for (i = 1; i <= m; i++)
         {
             j = 1;
             for(; j <= n; j++)
             {
-                if (seq1.charAt(j-1) == seq2.charAt(i-1)) 
+                if (seq1.charAt(j-1) == seq2.charAt(i-1))
+                // if symbol at index i of 1st seq is match with symbol at index j of 2nd seq
+                // compare with 1) symbol at index i of 1st seq align with gap(insert to 2nd sequence)
+                //              2) symbol at index j of 2nd seq align with gap(insert to 1st sequence)
+                // and add traceback symbol at index [i][j]  
                     score[i][j] = max(score[i-1][j]+gap
                                     ,score[i][j-1]+gap
                                     ,score[i-1][j-1]+match
                                     ,traceback,i,j);
                 else 
+                // if symbol at index i of 1st seq is mismatch with symbol at index j of 2nd seq
+                // compare with 1) symbol at index i of 1st seq align with gap(insert to 2nd sequence)
+                //              2) symbol at index j of 2nd seq align with gap(insert to 1st sequence)
+                // and add traceback symbol at index [i][j]  
                     score[i][j] = max(score[i-1][j]+gap
                                     ,score[i][j-1]+gap
                                     ,score[i-1][j-1]+mismatch
@@ -75,7 +85,7 @@ public class PairwiseAlignment
         System.out.println("scoring scheme: match = "+match+"\n\t  mismatch = "+mismatch
                             +"\n\t  gap ="+gap);
         System.out.println("-------------------------------------------------");
-        //print path from traceback
+        //print path from traceback table
         String one = "";
         String two = "";
         printPath(seq1,seq2,traceback,m,n,one,two);
@@ -183,6 +193,9 @@ public class PairwiseAlignment
     
     public static void main(String[] args) throws FileNotFoundException, IOException 
     {   
+        // input file is text file
+        // in scoring file, 1st line is match score 2nd is mismatch score and 3rd is gap penalty
+        // sequence file has 2 line, each line is 1st and 2nd sequence
         FileReader scr = new FileReader("scoring.txt");
         FileReader seq = new FileReader("sequence.txt");
         
